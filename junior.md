@@ -9,6 +9,8 @@
 ### Практические задачи (алгоритмы):
 
 1) Задача "Квадраты отсортированного массива"
+
+https://leetcode.com/problems/squares-of-a-sorted-array/description/
 ```
 Задан целочисленный массив nums, отсортированный в порядке неубывания.
 Реализовать функцию, которая возвращает массив квадратов этих чисел, отсортированный в порядке неубывания.
@@ -22,13 +24,35 @@
 Ввод: nums = [-7,-3,2,3,11]
 Вывод: [4,9,9,49,121]
 ```
+Исходные данные:
 ```go
 func sortedSquares(nums []int) []int {
     
 }
 ```
+Пример решения O(n):
+```go
+func sortedSquares(nums []int) []int {
+    n := len(nums)-1
+    result := make([]int, len(nums))
+
+    for i, j := 0, n; n >= 0; n-- {     
+        if nums[i] < 0 && -nums[i] >= nums[j] {
+            result[n] = nums[i] * nums[i]
+            i++
+        } else {
+            result[n] = nums[j] * nums[j]
+            j--
+        }
+    }
+    
+    return result
+}
+```
 
 2) Задача "Наибольший общий префикс"
+
+https://leetcode.com/problems/longest-common-prefix
 ```
 Реализовать функцию, которая находит самый длинный общий префикс среди элементов массива строк. 
 Если такого префикса нет, программа должна вернуть пустую строку.
@@ -46,13 +70,55 @@ func sortedSquares(nums []int) []int {
 0 <= strs[i].length <= 200
 strs[i] состоит только из строчных английских букв.
 ```
+Исходные данные:
 ```go
 func longestCommonPrefix(strs []string) string {
     
 }
 ```
+Пример решения (№1) O(n*m):
+```go
+func longestCommonPrefix(strs []string) string {
+    p := strs[0]
+    
+    for _, v := range strs {
+        i := 0
+        for ; i < len(v) && i < len(p) && p[i] == v[i]; i++ {}
+        p = p[:i] 
+    }
+
+    return p
+}
+```
+
+Пример решения (№2) O(n*m):
+```go
+func longestCommonPrefix(strs []string) string {
+    for i := range strs[0] {
+        for j := range strs {
+            if i >= len(strs[j]) {
+                return strs[0][:i]
+            }
+			
+            if strs[0][i] != strs[j][i] {
+                return strs[0][:i]
+            }
+        }
+    }
+	
+    return strs[0]
+}
+```
+Пример решения (№3) O(n):
+```
+Также кадидат может предложить решение с помощью trie (префиксного дерева), 
+это оптимальное по времение решение за O(n), но долгое в реализации.
+В таком случае, следует предложить кандидату решить задачу менее оптимальным, но более простым способом.
+```
 
 3) Задача "Пересечение двух массивов"
+
+https://leetcode.com/problems/intersection-of-two-arrays/description/
 ```
 Даны два целочисленных массива nums1 и nums2, верните массив их пересечения. 
 Каждый элемент в результате должен быть уникальным, и вы можете вернуть результат в любом порядке.
@@ -70,12 +136,35 @@ func longestCommonPrefix(strs []string) string {
 func intersection(nums1 []int, nums2 []int) []int {
 
 }
+``` 
+
+Пример решения (№1) O(n):
+```go
+func intersection(nums1 []int, nums2 []int) []int {
+    count:=make(map[int]bool)
+    result:=make([]int, 0)
+    
+    for _,num := range nums1{
+        count[num]=true
+    }
+    
+    for _, num := range nums2{
+        if count[num] {
+            result=append(result,num)
+            count[num]=false
+        }
+    }
+
+    return result    
+}
 ```
 
 ### Практические задачи (concurrency):
 1) Задача "Асинхронное слияние каналов"
 
-Реализовать функцию asyncMerge, которая будет производить асинхронное слияние каналов
+Реализовать функцию asyncMerge, которая будет производить асинхронное слияние каналов.
+
+Исходные данные:
 ```go
 func main(){
 ch1 := make(chan int, 10)
@@ -100,14 +189,43 @@ func asyncMerge[T any](chans ...chan T)chan T {
 }
 ```
 
+Пример решения:
+```go
+func asyncMerge[T any](chans ...chan T) chan T {
+	result := make(chan T)
+	wg := new(sync.WaitGroup)
+
+	for _, singleChan := range chans {
+		wg.Add(1)
+		singleChan := singleChan
+
+		go func() {
+			defer wg.Done()
+
+			for val := range singleChan {
+				result <- val
+			}
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
+
+	return result
+}
+```
+
 2) Задача "Конкурентный подсчет слов"
 
-Реализовать асинхронный подсчет количества слов во всех файлах
+Реализовать асинхронный подсчет количества слов во всех файлах.
 
-На вход получаем массив строк, который содержит названия файлов
-Каждый файл содержит простой текст, где слова разделены пробелами
+На вход получаем массив строк, который содержит названия файлов. Каждый файл содержит простой текст, где слова разделены пробелами.
 
-Ожидаемый вывод: "total words: 15"
+Ожидаемый вывод: "total words: 15".
+
+Исходные данные:
 
 ```go
 func main(){
@@ -115,50 +233,44 @@ func main(){
 }
 ```
 
-3) Задача "Оптимизация запросов к внешнему сервису"
-
-Необходимо ускорить выполнение программы, учитывая следующие условия:
-- Время ответа сервиса может достигать 3 секунды
-- Одновременно сервис может обрабатывать не более 300 клиентских соединений
-Нужно ускорить этот код
-
+Пример решения:
 ```go
-type User struct {
-    Id         int    `json:"id"`
-    Name       string `json:"name"`
-    SpentMoney int    `json:"spentMoney"`
+// countWords reads a file and returns the number of words.
+func countWords(filename string, wg *sync.WaitGroup, ch chan int) {
+	defer wg.Done()
+
+	fileContent, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Printf("Error reading file %s: %v\n", filename, err)
+		ch <- 0
+		return
+	}
+
+	words := strings.Fields(string(fileContent))
+	ch <- len(words)
 }
 
-const (
-    url      = "https://www.wildberries.ru/getPurchasesByID?id=%d"
-    reqCount = 10_000_000
-)
-
 func main() {
-    maxSpentMoney := 0
-    for id := 0; id < reqCount; id++ {
-        response, err := http.Get(fmt.Sprintf(url, id))
-        if err != nil {
-            log.Fatal(err)
-        }
+	files := []string{"file1.txt", "file2.txt", "file3.txt"}
 
-        buf, err := io.ReadAll(response.Body)
-        if err != nil {
-            log.Fatal(err)
-        }
+	var wg sync.WaitGroup
+	wordCountCh := make(chan int, len(files))
 
-        var user User
+	for _, file := range files {
+		wg.Add(1)
+		go countWords(file, &wg, wordCountCh)
+	}
 
-        err = json.Unmarshal(buf, &response)
-        if err != nil {
-            log.Fatal(err)
-        }
+	go func() {
+		wg.Wait()
+		close(wordCountCh)
+	}()
 
-        if user.SpentMoney > maxSpentMoney {
-            maxSpentMoney = user.SpentMoney
-        }
-    }
+	totalWords := 0
+	for count := range wordCountCh {
+		totalWords += count
+	}
 
-    fmt.Println(maxSpentMoney)
+	fmt.Printf("Total words: %d\n", totalWords)
 }
 ```
